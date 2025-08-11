@@ -1,8 +1,7 @@
 import { useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Player from "video.js/dist/types/player";
-import { Box, Stack, Typography } from "@mui/material";
-import { SliderUnstyledOwnProps } from "@mui/base/SliderUnstyled";
+import { Box } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
@@ -21,12 +20,14 @@ import PlayerSeekbar from "src/components/watch/PlayerSeekbar";
 import PlayerControlButton from "src/components/watch/PlayerControlButton";
 import MainLoadingScreen from "src/components/MainLoadingScreen";
 
-// Explicitly type the player state interface to allow for undefined duration if needed
+import React from "react";
+
+// Explicitly type the player state interface
 interface PlayerState {
   paused: boolean;
   muted: boolean;
   playedSeconds: number;
-  duration: number; // keep number, but ensure assignment is always number (no undefined)
+  duration: number; // always number, no undefined
   volume: number;
   loaded: number;
 }
@@ -83,10 +84,11 @@ export function Component() {
 
     player.one("durationchange", () => {
       setPlayerInitialized(true);
-      // Ensure duration is always number by providing fallback 0
+
+      const duration = player.duration();
       setPlayerState((draft) => ({
         ...draft,
-        duration: player.duration() ?? 0,
+        duration: typeof duration === "number" ? duration : 0,
       }));
     });
 
@@ -97,12 +99,11 @@ export function Component() {
     });
   };
 
-  // Fix for implicit any: explicitly type event and value parameters
-  const handleVolumeChange: SliderUnstyledOwnProps["onChange"] = (
-    _event: Event,
+  // Explicit types on parameters to avoid implicit any errors
+  const handleVolumeChange = (
+    _event: React.SyntheticEvent<Element, Event>,
     value: number | number[]
   ) => {
-    // If slider value is array, take first element (usually slider range, but should be number here)
     const volumeValue = Array.isArray(value) ? value[0] : value;
 
     playerRef.current?.volume(volumeValue / 100);
