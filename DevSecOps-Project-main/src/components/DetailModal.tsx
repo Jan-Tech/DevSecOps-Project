@@ -51,12 +51,21 @@ export default function DetailModal() {
     setMuted(player.muted());
   }, []);
 
-  const handleMute = useCallback((status: boolean) => {
+  const handleMute = useCallback(() => {
     if (playerRef.current) {
-      playerRef.current.muted(!status);
-      setMuted(!status);
+      const newMutedState = !muted;
+      playerRef.current.muted(newMutedState);
+      setMuted(newMutedState);
     }
-  }, []);
+  }, [muted]);
+
+  // Safe getters with fallback
+  const videoKey =
+    detail.mediaDetail?.videos?.results?.[0]?.key ?? "L3oOldViIgY";
+
+  const releaseYear = detail.mediaDetail?.release_date
+    ? detail.mediaDetail.release_date.substring(0, 4)
+    : "Unknown";
 
   if (detail.mediaDetail) {
     return (
@@ -67,6 +76,8 @@ export default function DetailModal() {
         open={!!detail.mediaDetail}
         id="detail_dialog"
         TransitionComponent={Transition}
+        onClose={() => setDetailType({ mediaType: undefined, id: undefined })}
+        aria-labelledby="detail-dialog-title"
       >
         <DialogContent sx={{ p: 0, bgcolor: "#181818" }}>
           <Box
@@ -83,6 +94,7 @@ export default function DetailModal() {
                 width: "100%",
                 position: "relative",
                 height: "calc(9 / 16 * 100%)",
+                minHeight: { xs: 180, sm: 240 },
               }}
             >
               <VideoJSPlayer
@@ -96,10 +108,7 @@ export default function DetailModal() {
                   sources: [
                     {
                       type: "video/youtube",
-                      src: `https://www.youtube.com/watch?v=${
-                        detail.mediaDetail?.videos.results[0]?.key ||
-                        "L3oOldViIgY"
-                      }`,
+                      src: `https://www.youtube.com/watch?v=${videoKey}`,
                     },
                   ],
                 }}
@@ -143,12 +152,13 @@ export default function DetailModal() {
                   right: 15,
                   position: "absolute",
                   bgcolor: "#181818",
-                  width: { xs: 22, sm: 40 },
-                  height: { xs: 22, sm: 40 },
+                  width: { xs: 32, sm: 40 },
+                  height: { xs: 32, sm: 40 },
                   "&:hover": {
                     bgcolor: "primary.main",
                   },
                 }}
+                aria-label="Close detail modal"
               >
                 <CloseIcon
                   sx={{ color: "white", fontSize: { xs: 14, sm: 22 } }}
@@ -164,7 +174,7 @@ export default function DetailModal() {
                 }}
               >
                 <MaxLineTypography variant="h4" maxLine={1} sx={{ mb: 2 }}>
-                  {detail.mediaDetail?.title}
+                  {detail.mediaDetail?.title || "Unknown Title"}
                 </MaxLineTypography>
                 <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
                   <PlayButton sx={{ color: "black", py: 0 }} />
@@ -177,8 +187,9 @@ export default function DetailModal() {
                   <Box flexGrow={1} />
                   <NetflixIconButton
                     size="large"
-                    onClick={() => handleMute(muted)}
+                    onClick={handleMute}
                     sx={{ zIndex: 2 }}
+                    aria-label={muted ? "Unmute video" : "Mute video"}
                   >
                     {!muted ? <VolumeUpIcon /> : <VolumeOffIcon />}
                   </NetflixIconButton>
@@ -196,9 +207,7 @@ export default function DetailModal() {
                           variant="subtitle1"
                           sx={{ color: "success.main" }}
                         >{`${getRandomNumber(100)}% Match`}</Typography>
-                        <Typography variant="body2">
-                          {detail.mediaDetail?.release_date.substring(0, 4)}
-                        </Typography>
+                        <Typography variant="body2">{releaseYear}</Typography>
                         <AgeLimitChip label={`${getRandomNumber(20)}+`} />
                         <Typography variant="subtitle2">{`${formatMinuteToReadable(
                           getRandomNumber(180)
@@ -211,19 +220,23 @@ export default function DetailModal() {
                         variant="body1"
                         sx={{ mt: 2 }}
                       >
-                        {detail.mediaDetail?.overview}
+                        {detail.mediaDetail?.overview || "No overview available."}
                       </MaxLineTypography>
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>
                       <Typography variant="body2" sx={{ my: 1 }}>
-                        {`Genres : ${detail.mediaDetail?.genres
-                          .map((g) => g.name)
-                          .join(", ")}`}
+                        {`Genres : ${
+                          detail.mediaDetail?.genres
+                            ?.map((g) => g.name)
+                            .join(", ") || "N/A"
+                        }`}
                       </Typography>
                       <Typography variant="body2" sx={{ my: 1 }}>
-                        {`Available in : ${detail.mediaDetail?.spoken_languages
-                          .map((l) => l.name)
-                          .join(", ")}`}
+                        {`Available in : ${
+                          detail.mediaDetail?.spoken_languages
+                            ?.map((l) => l.name)
+                            .join(", ") || "N/A"
+                        }`}
                       </Typography>
                     </Grid>
                   </Grid>

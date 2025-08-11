@@ -34,7 +34,7 @@ const StyledSlider = styled(Slider)(
         width: `calc(100% - ${2 * padding}px)`,
       },
       "& .slick-list > .slick-track": {
-        margin: "0px !important",
+        margin: "0 !important",
       },
       "& .slick-list > .slick-track > .slick-current > div > .NetflixBox-root > .NetflixPaper-root:hover":
         {
@@ -64,8 +64,9 @@ function SlideItem({ item }: SlideItemProps) {
 interface SlickSliderProps {
   data: PaginatedMovieResult;
   genre: Genre | CustomGenre;
-  handleNext: (page: number) => void;
+  // handleNext: (page: number) => void; // unused prop removed
 }
+
 export default function SlickSlider({ data, genre }: SlickSliderProps) {
   const sliderRef = useRef<Slider>(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
@@ -73,13 +74,13 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
   const [isEnd, setIsEnd] = useState(false);
   const theme = useTheme();
 
-  const beforeChange = async (currentIndex: number, nextIndex: number) => {
+  const beforeChange = (currentIndex: number, nextIndex: number) => {
     if (currentIndex < nextIndex) {
       setActiveSlideIndex(nextIndex);
     } else if (currentIndex > nextIndex) {
       setIsEnd(false);
+      setActiveSlideIndex(nextIndex);
     }
-    setActiveSlideIndex(nextIndex);
   };
 
   const settings: Settings = {
@@ -89,13 +90,7 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
     lazyLoad: "ondemand",
     slidesToShow: 6,
     slidesToScroll: 6,
-    // afterChange: (current) => {
-    //   console.log("After Change", current);
-    // },
     beforeChange,
-    // onEdge: (direction) => {
-    //   console.log("Edge: ", direction);
-    // },
     responsive: [
       {
         breakpoint: 1536,
@@ -149,18 +144,14 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
             <NetflixNavigationLink
               variant="h5"
               to={`/genre/${
-                genre.id || genre.name.toLowerCase().replace(" ", "_")
+                genre.id || genre.name.toLowerCase().replace(/\s+/g, "_")
               }`}
               sx={{
                 display: "inline-block",
                 fontWeight: 700,
               }}
-              onMouseOver={() => {
-                setShowExplore(true);
-              }}
-              onMouseLeave={() => {
-                setShowExplore(false);
-              }}
+              onMouseOver={() => setShowExplore(true)}
+              onMouseLeave={() => setShowExplore(false)}
             >
               {`${genre.name} Movies `}
               <MotionContainer
