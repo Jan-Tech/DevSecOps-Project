@@ -21,7 +21,8 @@ const RootStyle = styled("div")(() => ({
   overflow: "inherit",
 }));
 
-const StyledSlider = styled(Slider)(
+// Fix: Use type assertion to avoid type conflicts
+const StyledSlider = styled(Slider as any)(
   ({ theme, padding }: { theme: Theme; padding: number }) => ({
     display: "flex !important",
     justifyContent: "center",
@@ -68,7 +69,8 @@ interface SlickSliderProps {
 }
 
 export default function SlickSlider({ data, genre }: SlickSliderProps) {
-  const sliderRef = useRef<Slider>(null);
+  // Fix: Use any type for the ref to avoid type conflicts
+  const sliderRef = useRef<any>(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [showExplore, setShowExplore] = useState(false);
   const [isEnd, setIsEnd] = useState(false);

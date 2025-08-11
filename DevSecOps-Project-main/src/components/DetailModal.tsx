@@ -48,7 +48,8 @@ export default function DetailModal() {
 
   const handleReady = useCallback((player: Player) => {
     playerRef.current = player;
-    setMuted(player.muted());
+    setMuted(player.muted() ?? true); // Uses nullish coalescing to default to true
+    
   }, []);
 
   const handleMute = useCallback(() => {

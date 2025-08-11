@@ -78,24 +78,32 @@ export function Component() {
 
     player.on("timeupdate", () => {
       setPlayerState((draft) => {
-        return { ...draft, playedSeconds: player.currentTime() };
+        // Fix: Ensure playedSeconds is always a number
+        const currentTime = player.currentTime();
+        return { 
+          ...draft, 
+          playedSeconds: typeof currentTime === "number" ? currentTime : 0 
+        };
       });
     });
 
     player.one("durationchange", () => {
       setPlayerInitialized(true);
 
+      // Fix: Properly handle the duration to ensure it's always a number
       const duration = player.duration();
       setPlayerState((draft) => ({
         ...draft,
-        duration: typeof duration === "number" ? duration : 0,
+        duration: typeof duration === "number" && !isNaN(duration) ? duration : 0,
       }));
     });
 
     playerRef.current = player;
 
+    // Fix: Ensure paused is always a boolean
+    const isPaused = player.paused();
     setPlayerState((draft) => {
-      return { ...draft, paused: player.paused() };
+      return { ...draft, paused: typeof isPaused === "boolean" ? isPaused : false };
     });
   };
 
@@ -131,7 +139,7 @@ export function Component() {
                 <KeyboardBackspaceIcon />
               </PlayerControlButton>
             </Box>
-            {/* ... rest of your UI here unchanged ... */}
+            {/* Add the rest of your UI components here */}
           </Box>
         )}
       </Box>
